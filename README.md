@@ -1,10 +1,10 @@
 # ABET
 auto budget and expense tracker will use ML to offer insights
 
-backend: 
-    python 
-    fastAPI - API creation for data 
-    pydantic - data validation 
+    backend: 
+        python 
+        fast API - API creation for data 
+        pydantic - data validation 
 
     DataBase: 
         sqlite - user information, number data, images, graphs
@@ -17,12 +17,12 @@ backend:
         scikit learn
 
 
-frontend: 
-    javascript
-    react - UI design tools
-    fetchAPI - get data from backend API 
+    frontend: 
+        javascript
+        react - UI design tools
+        fetchAPI - get data from backend API 
     
-    chart.js - charts 
+        chart.js - charts 
 
 
 Project Explaination: 
