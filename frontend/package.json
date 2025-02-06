@@ -8,17 +8,19 @@
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "WATCHPACK_POLLING=true react-scripts start",
+    "dev": "WATCHPACK_POLLING=true react-scripts --openssl-legacy-provider start --host 0.0.0.0",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:8000",
   "eslintConfig": {
     "extends": [
       "react-app",
