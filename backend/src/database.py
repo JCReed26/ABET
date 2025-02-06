@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
+#need to make sure we can CRUD into the database on mySQL also how can we view the data in workbench
 #loads the environment creates the database engine and creates database session
 #port 3306
 load_dotenv()
