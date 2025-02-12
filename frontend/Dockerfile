@@ -4,10 +4,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY . .
+#COPY . .
 
 RUN npm install 
 
 EXPOSE 3000
 
+ENV CHOKIDAR_USEPOLLING=true
 CMD ["npm", "start"]

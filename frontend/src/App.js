@@ -1,102 +1,43 @@
-import {useEffect, useState} from 'react'; 
-import "./App.css";
-import supabase from "./supabase-client";
+import React from "react";
+import Sidebar from "./components/sidebar"; 
+import {
+  BrowserRouter as Router, 
+  Routes, 
+  Route,
+} from "react-router-dom";
+
+import Home from "./views/home.js";
+import Users from "./views/users.js";
+import Expenses from "./views/expense.js"; //this one
+import Incomes from "./views/income.js"; //this one
+import Insights from "./views/insights.js";
 
 function App() {
-  const [users, setUsers] = useState([]);
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
 
-  useEffect(() => {
-    getUsers(); 
-  }, []);
 
-  async function getUsers() {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*');
-      
-      if (error) throw error;
-      
-      console.log('data:', data); // Debug log
-      setUsers(data || []);
-    } catch (error) {
-      console.error('Error:', error.message);
-    }
-  }
-
-  const addUser = async (e) => {
-    e.preventDefault();
-    try {
-      if (!newUserName || !newUserEmail) {
-        alert('Please fill in all fields');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert([{ 
-          name: newUserName, 
-          email: newUserEmail 
-        }]);
-      
-      if (error) throw error;
-
-      // Refresh the users list
-      getUsers(data || []);
-      
-      // Clear form
-      setNewUserName('');
-      setNewUserEmail('');
-      
-    } catch (error) {
-      console.error('Error adding user:', error.message);
-      alert('Error adding user');
-    }
-  }
+  const maincontentStyle = {
+    marginLeft: '200px',
+    padding: '20px',
+    minHeight: '100vh',
+    backgroundColor: '#fff',
+    position: 'relative'
+  };
 
   return (
-    <div>
-      <div>
-        <h1>Users</h1>
+    <Router>
+      <Sidebar />
+      <div style={maincontentStyle}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/incomes" element={<Incomes />} /> 
+          <Route path="/insights" element={<Insights />} />
+        </Routes>
       </div>
-      <div>
-        <h2>Add User</h2>
-        <form onSubmit={addUser}>
-          <label>
-            Name:
-            <input 
-              type="text" 
-              value={newUserName}
-              onChange={(e) => setNewUserName(e.target.value)}
-            />
-          </label>
-          <label>
-            Email:
-            <input 
-              type="text" 
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-            />
-          </label>
-          <input type="submit" value="Submit"/>
-        </form>
-      </div>
-      <div>
-        <h2>Users List</h2>
-        <ul>
-          {users.length === 0 ? (
-            <li>No users found</li>
-          ) : (
-            users.map((user, index) => (
-              <li key={index}>{user.name} - {user.email}</li>
-            ))
-          )}
-        </ul>
-      </div>
-    </div>
+    </Router>
   );
+
 }
 
 export default App;
