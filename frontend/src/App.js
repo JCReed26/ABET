@@ -11,6 +11,7 @@ import Users from "./views/users.js";
 import Expenses from "./views/expense.js"; //this one
 import Incomes from "./views/income.js"; //this one
 import Insights from "./views/insights.js";
+import ReceiptProcessor from "./views/receipt-processor.js";
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/incomes" element={<Incomes />} /> 
           <Route path="/insights" element={<Insights />} />
+          <Route path="/receipt-processor" element={<ReceiptProcessor />} />
         </Routes>
       </div>
     </Router>
