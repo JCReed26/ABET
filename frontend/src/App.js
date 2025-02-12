@@ -44,7 +44,7 @@ function App() {
       if (error) throw error;
 
       // Refresh the users list
-      getUsers();
+      getUsers(data || []);
       
       // Clear form
       setNewUserName('');
