@@ -30,6 +30,7 @@ function Sidebar() {
           <Link to="/expenses" style={linkStyle}>Expenses</Link>
           <Link to="/incomes" style={linkStyle}>Incomes</Link>
           <Link to="/insights" style={linkStyle}>Insights</Link>
+          <Link to="/receipt-processor" style={linkStyle}>Receipt Processor</Link>
         </div>
       );
 }
