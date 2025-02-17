@@ -1,13 +1,24 @@
-import React from 'react';
+import { useState } from 'react';
+import '../styles/receipt-processor.css';
 
 function ReceiptProcessor() {
 
+    //receipt data handling
     const [receipt_data, setReceiptData] = useState([]);
-
-
+    
     const handleFileUpload = async (event) => {
+        setIsLoading(true);
         const file = event.target.files[0]; 
         console.log(file); 
+        try {
+            const data = await uploadReceipt(file);
+            console.log(data);
+            setReceiptData(data); 
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     const uploadReceipt = async (image) => {
@@ -15,18 +26,39 @@ function ReceiptProcessor() {
         const formData = new FormData(); 
         formData.append('file', image);
 
+
         //try api request
         try {
-            const response = await fetch('http://localhost:8000/process_image')
-                .then(response => response.json())
-                .then(response => console.log(response))
-                .then(response => setReceiptData(response))
+            const response = await fetch('http://localhost:8000/process-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('api response failed', response);
+            }
+
+            const data = await response.json();
+            return data;
         } catch (error) {
-            throw new Error("Failed to process image");
-            console.log(error);
+            console.log('Error:', error);
+            throw error;
         }
     }
+    //end of receipt data handling 
 
+    //spinny loading 
+    const [isLoading, setIsLoading] = useState(false); 
+
+    //end spinny loading 
+
+
+
+
+
+
+
+    //react output 
     return (
         <div>
             <h1>Receipt Processor</h1>
@@ -39,7 +71,11 @@ function ReceiptProcessor() {
             </div>
             <div className="json-visualizer">
                 <h2>JSON Output</h2>
-                {receipt_data && <pre>{JSON.stringify(receipt_data, null, 2)}</pre>}
+                {isLoading ? (
+                    <div className='loader'></div>
+                ) : (
+                    receipt_data && <pre>{receipt_data}</pre>
+                )}
             </div>
         </div>
     );
