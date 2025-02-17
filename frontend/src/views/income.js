@@ -63,6 +63,23 @@ function Incomes() {
     }
   }
 
+  const handleDelete = async (id) => {
+    try {
+      const { data, error } = await supabase 
+        .from('income')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error; 
+
+      getIncome(data || []);
+
+    } catch (error) {
+      console.error('Error:', error.message);
+      alert('Error deleting income');
+    }
+  }
+
 
 
   return (
@@ -110,7 +127,7 @@ function Incomes() {
                     <button className='icon-button edit-button'>
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </button>
-                    <button className='icon-button delete-button'>
+                    <button className='icon-button delete-button' onClick={() => handleDelete(data.id)}>
                       <FontAwesomeIcon icon={faTrashAlt} />
                     </button>
                   </div>
