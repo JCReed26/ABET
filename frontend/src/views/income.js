@@ -6,7 +6,6 @@ import { faPencilAlt, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-ico
 
 function Incomes() {
 
-  //overall data and functions 
   const [income_data, setIncomeData] = useState([]);
 
   const [IsCreatePopUpOpen, setIsCreatePopUpOpen] = useState(false);
