@@ -14,12 +14,42 @@ function ReceiptProcessor() {
         try {
             const data = await uploadReceipt(file);
             postReceipt(data, file);
+            parseExpense(data, file);
             console.log(data);
             setReceiptData(data); 
         } catch (error) {
             console.error(error);
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    const parseExpense = async (json_data, file) => {
+        if(!json_data) {
+            alert('issue with data')
+            return 
+        }
+
+        try {
+            const jsonObj = typeof json_data === 'string' ? JSON.parse(json_data) : json_data; 
+            
+            console.log("Store value:", jsonObj.name);
+            console.log("Amount value:", jsonObj.total_amount);
+            console.log("Category value:", jsonObj.category);
+            
+            const { error } = await supabase
+                .from('expenses')
+                .insert([{
+                    name: jsonObj.name || 'Unknown',
+                    amount: jsonObj.total_amount || 0.0,
+                    category: jsonObj.category || 'uncategorized'
+                }]);
+
+            if (error) throw error; 
+
+        } catch (error) {
+            console.error('Error posting receipt:', error);
+            alert('Failed to add expense');
         }
     }
 
@@ -34,6 +64,15 @@ function ReceiptProcessor() {
     
         try {
 
+            const jsonObj = typeof json_data === 'string' ? JSON.parse(json_data) : json_data;
+
+            // Debug values
+            console.log("JsonOBJ:", jsonObj);
+            console.log("Store value:", jsonObj.name);
+            console.log("Amount value:", jsonObj.total_amount);
+            console.log("Category value:", jsonObj.category);
+
+
             const compressedFile = await compressImage(file);
 
             const fileByteArray = await new Promise((resolve, reject) => {
@@ -46,10 +85,6 @@ function ReceiptProcessor() {
                 reader.onerror = reject;
                 reader.readAsArrayBuffer(compressedFile);
             });
-
-            console.log("Store:", json_data.name);
-            console.log("Amount:", json_data.total_amount);
-            console.log("Category:", json_data.category);
     
             // Insert into database
             const { error } = await supabase
@@ -57,9 +92,9 @@ function ReceiptProcessor() {
                 .insert([{
                     image_file: fileByteArray,
                     image_json: json_data,
-                    store: json_data.name || 'Unknown Store',
-                    amount: parseFloat(json_data.total_amount) || 0.0, 
-                    category: json_data.category || 'Uncategorized' 
+                    store: jsonObj.name || 'Unknown Store',
+                    amount: parseFloat(jsonObj.total_amount) || 0.0, 
+                    category: jsonObj.category || 'Uncategorized' 
                 }]);
     
             if (error) throw error;
