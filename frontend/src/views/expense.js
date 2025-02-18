@@ -24,7 +24,6 @@ function Expenses() {
     category: ''
   });
 
-
   useEffect(() => {
     getExpenses();
   }, []);
@@ -62,10 +61,19 @@ function Expenses() {
     }
   }
 
+  const handleNewExpClick = () => {
+    setCreateData({
+      name: '',
+      amount: 0.0, 
+      category: ''
+    });
+    setIsCreatePopUpOpen(true);
+  };
+
   const handleNewExpense = async (e) => {
     e.preventDefault();
     try {
-      if (!create_data.name || !create_data.amount || !create_data.type) {
+      if (!create_data.name || !create_data.amount || !create_data.category) {
         alert('Please fill out all fields');
         return;
       }
@@ -75,13 +83,13 @@ function Expenses() {
         .insert([{
           name: create_data.name,
           amount: create_data.amount, 
-          type: create_data.type
+          category: create_data.category
         }]);
       
       if (error) throw error; 
 
       //refresh 
-      getIncome();
+      getExpenses();
 
       //clear form 
       setIsCreatePopUpOpen(false);
@@ -97,14 +105,15 @@ function Expenses() {
     }
   };
 
-  const handleNewExpClick = (data) => {
-    setCreateData({
-      name: '',
-      amount: 0.0, 
-      category: ''
+  const handleUpdateClick = (data) => {
+    setUpdateData({
+      id: data.id,
+      name: data.name || '',
+      amount: data.amount || 0.0, 
+      category: data.category || ''
     });
-    setIsCreatePopUpOpen(true)
-  };
+    setIsUpdatePopUpOpen(true);
+  }; 
 
   const handleUpdateExpense = async (e) => {
     e.preventDefault();
@@ -119,25 +128,16 @@ function Expenses() {
         .eq('id', update_data.id);
 
       if (error) throw error; 
-      getExpenses();
-      setIsUpdatePopUpOpen(false);
       
+      setIsUpdatePopUpOpen(false);
+      getExpenses();
     } catch (error) {
       console.error('Error:', error.message);
       alert('error updating item');
     }
   };
 
-  const handleUpdateClick = (data) => {
-    setUpdateData({
-      id: data.id,
-      name: data.name || '',
-      amount: data.amount || 0.0, 
-      category: data.category || ''
-    });
-    setIsUpdatePopUpOpen(true);
-  }; 
-
+//start html
 
   return (
     <div>
@@ -155,7 +155,7 @@ function Expenses() {
                 <li key={index}>
                   <span><FontAwesomeIcon icon={faMoneyBills}/> {index} - {data.name} - ${data.amount} - {data.category}</span>
                   <div className='action-button'>
-                    <button className='icon-button edit-button' onClick={handleUpdateExpense}>
+                    <button className='icon-button edit-button' onClick={() => handleUpdateClick(data)}>
                       <FontAwesomeIcon icon={faPencilAlt}/>
                     </button>
                     <button className='icon-button delete-button' onClick={() => handleDelete(data.id)}>
@@ -167,15 +167,90 @@ function Expenses() {
             )
           }
         </ul>
-        <button className='add-income-button' onClick={handleNewExpense}>
+        <button className='add-income-button' onClick={handleNewExpClick}>
           <span>Add New Expense</span>
           <FontAwesomeIcon icon={faPlus} /> 
         </button>
       </div>
 
-        
+      <div>
+        {IsCreatePopUpOpen && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <h2>Add Expense</h2>
+              <form onSubmit={handleNewExpense}>
+                <label>
+                  Name:
+                  <input
+                    type="text"
+                    value={create_data.name}
+                    onChange={(e) => setCreateData({...create_data, name: e.target.value})}
+                  />
+                </label>
+                <label>
+                  Amount:
+                  <input
+                    type="text"
+                    value={create_data.amount}
+                    onChange={(e) => setCreateData({...create_data, amount: e.target.value})}
+                  />
+                </label>
+                <label>
+                  Category:
+                  <input
+                    type="text"
+                    value={create_data.category}
+                    onChange={(e) => setCreateData({...create_data, category: e.target.value})}
+                  />
+                </label>
+                <div className="popup-buttons">
+                  <button type="submit">Add</button>
+                  <button type="button" onClick={() => setIsCreatePopUpOpen(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
 
-
+      <div>
+        {IsUpdatePopUpOpen && (
+          <div className='popup-overlay'>
+            <div className='popup'>
+              <form onSubmit={handleUpdateExpense}>
+                <label>
+                  Name:
+                  <input
+                    type="text"
+                    value={update_data.name}
+                    onChange={(e) => setUpdateData({...update_data, name: e.target.value})}
+                  />
+                </label>
+                <label>
+                  Amount: $
+                  <input
+                    type="text"
+                    value={update_data.amount}
+                    onChange={(e) => setUpdateData({...update_data, amount: e.target.value})}
+                  />
+                </label>
+                <label>
+                  category:
+                  <input
+                    type="text"
+                    value={update_data.category}
+                    onChange={(e) => setUpdateData({...update_data, category: e.target.value})}
+                  />
+                </label>
+                <div className="popup-buttons">
+                  <button type="submit">Update</button>
+                  <button type="button" onClick={() => setIsUpdatePopUpOpen(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
 
 
     </div>
