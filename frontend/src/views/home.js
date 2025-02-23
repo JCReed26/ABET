@@ -9,6 +9,9 @@ function Home() {
   const [expenses, setExpenses] = useState([]);
   const [income, setIncome] = useState([]); 
 
+  const [selectedMonth, setSelectedMonth] = useState(new Date()); 
+  const [resetDay, setResetDay] = useState(1);
+
   useEffect(() => {
     getExpenses(); 
   }, []);
@@ -49,11 +52,11 @@ function Home() {
   }
 
   const calcExpenses = () => {
-    return expenses.reduce((sum, expenses) => sum + expenses.amount, 0);
+    return filterExpensesByMonth().reduce((sum, expenses) => sum + expenses.amount, 0);
   }
 
   const calcIncome = () => {
-    return income.reduce((sum, income) => sum + income.amount, 0);
+    return filterIncomeByMonth().reduce((sum, income) => sum + income.amount, 0);
   }
 
   const calcBudget = () => {
@@ -62,7 +65,7 @@ function Home() {
 
   const getExpenseByCat = () => {
     const categories = {};
-    expenses.forEach(expense => {
+    filterExpensesByMonth().forEach(expense => {
       if (!categories[expense.category]) {
         categories[expense.category] = 0;
       }
@@ -78,7 +81,7 @@ function Home() {
 
   const getIncomeStreams = () => {
     const streams = {}; 
-    income.forEach(income => {
+    filterIncomeByMonth().forEach(income => {
       if (!streams[income.type]) {
         streams[income.type] = 0;
       }
@@ -87,11 +90,90 @@ function Home() {
     return streams;
   }
 
+  const filterIncomeByMonth = () => {
+    return income.filter(inc => {
+      const incomeData = new Date(inc.created_at); 
+      const incomeMonth = new Date(incomeData.getFullYear(), incomeData.getMonth(), incomeData.getDate());
+
+      const cycleStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), resetDay);
+      const cycleEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1); 
+
+      return incomeMonth >= cycleStart && incomeMonth <= cycleEnd;
+    })
+  }
+
+  const filterExpensesByMonth = () => {
+    return expenses.filter(expense => {
+      const expenseData = new Date(expense.created_at); 
+      const expenseMonth = new Date(expenseData.getFullYear(), expenseData.getMonth(), expenseData.getDate());
+
+      const cycleStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), resetDay); 
+      const cycleEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1); 
+
+      return expenseMonth >= cycleStart && expenseMonth <= cycleEnd;
+    })
+  }
+
+  const gotoNextMonth = () => {
+    const newDate = new Date(selectedMonth); 
+    newDate.setMonth(newDate.getMonth() + 1);
+    setSelectedMonth(newDate);
+  }
+
+  const gotoPrevMonth = () => {
+    const newDate = new Date(selectedMonth); 
+    newDate.setMonth(newDate.getMonth() - 1); 
+    setSelectedMonth(newDate);
+  }
+
+  const initializeDate = (resetDay) => {
+    const today = new Date(); 
+    const userDay = new Date(today.getFullYear(), today.getMonth(), resetDay); 
+    setSelectedMonth(userDay)    
+  }
+
+  const getResetDay = async () => {
+    try {
+      const { data: { user }} = await supabase.auth.getUser(); 
+      const { data, error } = await supabase 
+        .from('user_settings')
+        .select('reset_day')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error; 
+
+      if (data?.reset_day) {
+        setResetDay(data.reset_day); 
+        initializeDate(data.reset_day);
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  useEffect(() => {
+    getResetDay(); 
+  }, []);
+
+
+
+
   return (
     <div>
         <div className="home-container">
         <h1 className="home-title">Financial Dashboard</h1>
         
+        <div className='month-navigation'>
+          <button onClick={gotoPrevMonth}>Previous</button>
+          <span style={{ fontSize: '1.2 rem' }}>
+            {selectedMonth.toDateString('en-US', { month: 'long', year: 'numeric' })} - {new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1).toDateString('en-US', { month: 'long', year: 'numeric' })}
+          </span>
+          <button onClick={gotoNextMonth}>Next</button>
+        </div>
+
+
+
         <div className="dashboard-content">
           <div className="summary-section">
             <div className="budget-overview">
@@ -141,7 +223,7 @@ function Home() {
                 </span>
               </div>
               <div className="transactions-list">
-                {expenses.map((expenses) => (
+                {filterExpensesByMonth().map((expenses) => (
                   <div key={expenses.id} className="transaction-item">
                     <span className="transaction-description">{expenses.category}</span>
                     <span className="transaction-amount expense">-${expenses.amount}</span>
@@ -158,7 +240,7 @@ function Home() {
                 </span>
               </div>
               <div className="transactions-list">
-                {income.map((income) => (
+                {filterIncomeByMonth().map((income) => (
                   <div key={income.id} className="transaction-item">
                     <span className="transaction-description">{income.type}</span>
                     <span className="transaction-amount income">+${income.amount}</span>

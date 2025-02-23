@@ -252,3 +252,51 @@
 .popup-buttons button:hover {
   opacity: 0.9;
 }
+
+.month-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.month-navigation button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.month-navigation button:hover {
+  background-color: #218838;
+}
+
+.month-navigation span {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.month-navigation label {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.month-navigation input {
+  margin-left: 0.5rem;
+  padding: 0.3rem;
+  width: 50px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.header {
+  margin-top: 10px;
+}

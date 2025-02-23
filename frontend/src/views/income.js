@@ -24,6 +24,66 @@ function Incomes() {
     type: ''
   });
 
+  const [selectedMonth, setSelectedMonth] = useState(new Date()); 
+  const [resetDay, setResetDay] = useState(1);
+
+  const filterIncomeByMonth = () => {
+    return income_data.filter(income => {
+      const incomeData = new Date(income.created_at);
+      const incomeMonth = new Date(incomeData.getFullYear(), incomeData.getMonth(), incomeData.getDate());
+
+      const cycleStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), resetDay);
+      const cycleEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1);
+
+      return incomeMonth >= cycleStart && incomeMonth <= cycleEnd;
+    })
+  }
+
+  const gotoNextMonth = () => {
+    const newDate = new Date(selectedMonth);
+    newDate.setMonth(newDate.getMonth() + 1);
+    setSelectedMonth(newDate); 
+  };
+
+  const goToPrevMonth = () => {
+    const newDate = new Date(selectedMonth); 
+    newDate.setMonth(newDate.getMonth() - 1); 
+    setSelectedMonth(newDate); 
+  };
+
+  const initializeDate = (resetDay) => {
+    const today = new Date(); 
+    const userDay = new Date(today.getFullYear(), today.getMonth(), resetDay);
+    setSelectedMonth(userDay)
+  }
+
+  const getResetDay = async () => {
+    try {
+      const { data: {user} } = await supabase.auth.getUser(); 
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('reset_day')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data?.reset_day) {
+        setResetDay(data.reset_day);
+        initializeDate(data.reset_day);
+      }
+
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  useEffect(() => {
+    getResetDay();
+  }, []);
+
+
+
   //read functionality 
   useEffect(() => {
     getIncome();
@@ -62,12 +122,15 @@ function Incomes() {
         return;
       }
 
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { error } = await supabase 
         .from('income')
         .insert([{
           name: create_data.name,
           amount: create_data.amount, 
-          type: create_data.type
+          type: create_data.type,
+          user_id: user.id
         }]);
       
       if (error) throw error; 
@@ -143,8 +206,15 @@ function Incomes() {
 
   return (
     <div>
-      <div>
+      <div className='header'>
         <h1>Incomes</h1>
+        <div className='month-navigation'>
+          <button onClick={goToPrevMonth}>Previous</button>
+          <span style={{ fontSize: '1.2 rem' }}>
+            {selectedMonth.toDateString('en-US', { month: 'long', year: 'numeric'})} - {new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1).toDateString('en-US', { month: 'long', year: 'numeric'})}
+          </span>
+          <button onClick={gotoNextMonth}>Next</button>
+        </div>
       </div>
       <div>
           <h2>Income Data</h2>
@@ -152,9 +222,9 @@ function Incomes() {
             {income_data.length === 0 ? (
               <li>No income data</li>
             ) : (
-              income_data.map((data, index) => (
+              filterIncomeByMonth().map((data, index) => (
                 <li key={index}>
-                  {data.type} - {data.name} - ${data.amount}
+                  {new Date(data.created_at).toLocaleDateString()} - {data.type} - {data.name} - ${data.amount}
                   <div className='action-button'>
                     <button className='icon-button edit-button' onClick={() => handleUpdateClick(data)}>
                       <FontAwesomeIcon icon={faPencilAlt} />
