@@ -30,9 +30,11 @@ function Expenses() {
 
   async function getExpenses() {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase 
         .from('expenses')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id);
 
       if (error) throw error; 
 
@@ -78,12 +80,15 @@ function Expenses() {
         return;
       }
 
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { error } = await supabase 
         .from('expenses')
         .insert([{
           name: create_data.name,
           amount: create_data.amount, 
-          category: create_data.category
+          category: create_data.category,
+          user_id: user.id
         }]);
       
       if (error) throw error; 

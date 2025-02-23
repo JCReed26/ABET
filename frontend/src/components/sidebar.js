@@ -26,7 +26,6 @@ function Sidebar() {
         <div style={sidebarStyle}>
           <h2 style={{ marginBottom: '20px' }}>Navigation</h2>
           <Link to="/" style={linkStyle}>Home</Link>
-          <Link to="/users" style={linkStyle}>Users</Link>
           <Link to="/expenses" style={linkStyle}>Expenses</Link>
           <Link to="/incomes" style={linkStyle}>Incomes</Link>
           <Link to="/insights" style={linkStyle}>Insights</Link>
