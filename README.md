@@ -1,8 +1,6 @@
 # ABET
-auto budget and expense tracker will use ML to offer insights
+Automatic Budget and Expense Tracker
 
-Project Explaination: 
-    In this project I will create an intelligent app that can develop insights based upon spending habits and offer
-    ideas to help save money through learning about and categorizing a persons spending habits
-    It will take an image of a reciept, categorize the items based upon the store (groceries, gas, rent, etc) and then give further categorization 
-    for example groceries can be split into (health/hygiene, protien, snacks, drinks, alcohol, etc) 
+Description: This is a simple app I plan to use to simplify my personal budgeting by just having to take a picture because I am horrid at doing it myself. Utilizing the backend API to categorize the receipts and add to my database will help me to analyze my spending habits better and see where all my money is going.
+
+This project uses a supabase database and authorization, react.js framework and MUI X components
