@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import supabase from '../supabase-client';
 import '../styles/home.css'
+import { PieChart } from '@mui/x-charts/PieChart';
 
 
 function Home() {
@@ -26,10 +27,6 @@ function Home() {
     } catch (error) {
       console.error('Error: ', error.message);
     }
-  };
-
-  function calculateWomenSalary(base) {
-    return base * 0.8;
   };
 
   useEffect(() => {
@@ -63,6 +60,22 @@ function Home() {
     return calcIncome() - calcExpenses();
   }
 
+  const getExpenseByCat = () => {
+    const categories = {};
+    expenses.forEach(expense => {
+      if (!categories[expense.category]) {
+        categories[expense.category] = 0;
+      }
+      categories[expense.category] += expense.amount;
+    });
+
+    return Object.entries(categories).map(([category, amount]) => ({
+      id: category,
+      value: amount,
+      label: category
+    }));
+  };
+
   const getIncomeStreams = () => {
     const streams = {}; 
     income.forEach(income => {
@@ -76,10 +89,7 @@ function Home() {
 
   return (
     <div>
-      <div>
-        <h1>Home</h1>
-      </div>
-      <div className="home-container">
+        <div className="home-container">
         <h1 className="home-title">Financial Dashboard</h1>
         
         <div className="dashboard-content">
@@ -89,19 +99,35 @@ function Home() {
                 <span>{calcBudget() >= 0 ? "+$" : "-$"}{calcBudget()}</span>
               </div>
               <div className="income-breakdown">
-                Income Streams
-                <span>
-                  {
-                    Object.entries(getIncomeStreams()).map(([type, amount]) => {
-                      <div key={type}>
-                        <span>{type}: ${amount}</span>
-                      </div>
-                    })
-                  }
-                </span>
+                <h3>Income Streams</h3>
+                <div className="breakdown-list">
+                    {
+                      Object.entries(getIncomeStreams()).map(([type, amount]) => (
+                        <div key={type} className="breakdown-item">
+                          <span className="breakdown-category">{type}:</span>
+                          <span className="breakdown-amount income">${amount.toFixed(2)}</span>
+                        </div>
+                      ))
+                    }
+                </div>
               </div>
               <div className="chart-container">
-
+                <h3>Expense Visualizer</h3>
+                <PieChart
+                  series={[
+                    {
+                      data: getExpenseByCat(),
+                      innerRadius: 86,
+                      outerRadius: 96,
+                      paddingAngle: 0,
+                      cornerRadius: 15,
+                      startAngle: -360,
+                      endAngle: 360,
+                      cx: 130,
+                      cy: 115,
+                    }
+                  ]}
+                />
               </div>
             </div>
           </div>
