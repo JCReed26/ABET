@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./components/sidebar"; 
 import {
-  BrowserRouter as Router, 
+  HashRouter as Router, 
   Routes, 
   Route,
 } from "react-router-dom";
@@ -44,7 +44,7 @@ function App() {
       { !session ? (
         <Auth />
       ) : (
-        <Router>
+        <Router basename="/">
           <Sidebar />
           <div style={maincontentStyle}>
             <Routes>
