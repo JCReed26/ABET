@@ -24,9 +24,71 @@ function Expenses() {
     category: ''
   });
 
+  const [selectedMonth, setSelectedMonth] = useState(new Date()); 
+  const [resetDay, setResetDay] = useState(1); 
+
+  const filterExpensesByMonth = () => {
+    return expenses.filter(expense => {
+      const expenseDate = new Date(expense.created_at);
+      const expenseMonth = new Date(expenseDate.getFullYear(), expenseDate.getMonth(), expenseDate.getDate());
+
+      const cycleStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), resetDay);
+      const cycleEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay - 1);
+      
+      return expenseMonth >= cycleStart && expenseMonth <= cycleEnd;
+    })
+  }
+
+  const goToPreviousMonth = () => {
+    const newDate = new Date(selectedMonth);
+    newDate.setMonth(newDate.getMonth() - 1);
+    setSelectedMonth(newDate);
+  };
+
+  const gotoNextMonth = () => {
+    const newDate = new Date(selectedMonth);
+    newDate.setMonth(newDate.getMonth() + 1);
+    setSelectedMonth(newDate);
+  }
+
+  const initializeDate = (resetDay) => {
+    const today = new Date(); 
+    const userDay = new Date(today.getFullYear(), today.getMonth(), resetDay);
+    setSelectedMonth(userDay)
+  }
+
+  const getResetDay = async () => {
+    try {
+      const { data: {user} } = await supabase.auth.getUser(); 
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('reset_day')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data?.reset_day) {
+        setResetDay(data.reset_day);
+        initializeDate(data.reset_day);
+      }
+
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+
+  useEffect(() => {
+    getResetDay();
+  }, []);
+
+
+
+
+  //standard crud
   useEffect(() => {
     getExpenses();
-  }, []);
+  }, [selectedMonth, resetDay]);
 
   async function getExpenses() {
     try {
@@ -34,7 +96,8 @@ function Expenses() {
       const { data, error } = await supabase 
         .from('expenses')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error; 
 
@@ -146,19 +209,29 @@ function Expenses() {
 
   return (
     <div>
-      <div>
+      <div className='header'>
         <h1>Expenses</h1>
+        <div className='month-navigation'>
+          <button onClick={goToPreviousMonth}>Previous</button>
+            <span style={{ fontSize: '1.2rem' }}>
+                {selectedMonth.toDateString('en-US', { month: 'long', year: 'numeric'})} - {new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, resetDay -1).toDateString('en-US', { month: 'long', year: 'numeric' })}
+            </span>
+          <button onClick={gotoNextMonth}>Next</button>
+        </div>
       </div>
       <div>
         <h2>Expense Data</h2>
         <ul>
           {
-            expenses.length === 0 ? (
-              <li>No income data</li>
+            expenses.length <= 0 ? (
+              <li>No expense data</li>
             ) : (
-              expenses.map((data, index) => (
+              filterExpensesByMonth().map((data, index) => (
                 <li key={index}>
-                  <span><FontAwesomeIcon icon={faMoneyBills}/> {index} - {data.name} - ${data.amount} - {data.category}</span>
+                  <span>
+                    <FontAwesomeIcon icon={faMoneyBills}/> 
+                    {new Date(data.created_at).toLocaleDateString()} - {data.name} - ${data.amount} - {data.category}
+                  </span>
                   <div className='action-button'>
                     <button className='icon-button edit-button' onClick={() => handleUpdateClick(data)}>
                       <FontAwesomeIcon icon={faPencilAlt}/>
@@ -168,8 +241,7 @@ function Expenses() {
                     </button>
                   </div>
                 </li>
-              ))
-            )
+            )))          
           }
         </ul>
         <button className='add-income-button' onClick={handleNewExpClick}>
