@@ -44,7 +44,7 @@ function App() {
       { !session ? (
         <Auth />
       ) : (
-        <Router>
+        <Router basename="/ABET">
           <Sidebar />
           <div style={maincontentStyle}>
             <Routes>
