@@ -1,11 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '../styles/receipt-processor.css';
 import supabase from '../supabase-client';
 
 function ReceiptProcessor() {
 
     //receipt data handling
-    const [receipt_data, setReceiptData] = useState([]);
+    const [receipts, setReceipts] = useState([]);
+
+    useEffect(() => {
+        getReceipts();
+    }, []);
+
+    async function getReceipts() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser(); 
+            const { data, error } = await supabase 
+                .from('receipts')
+                .select('id, store, amount')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setReceipts(data || []);
+        } catch (error) {
+            console.error('Error fetching receipts:', error.message);
+        }
+    }
     
     const handleFileUpload = async (event) => {
         setIsLoading(true);
@@ -16,7 +36,6 @@ function ReceiptProcessor() {
             postReceipt(data, file);
             parseExpense(data, file);
             console.log(data);
-            setReceiptData(data); 
         } catch (error) {
             console.error(error);
         } finally {
@@ -180,26 +199,45 @@ function ReceiptProcessor() {
     //end spinny loading 
 
     //react output 
-    return (
-        <div>
-            <h1>Receipt Processor</h1>
-            <h2>Add Receipt</h2>
-            <div className="mb-1">
-                <span className='font-css top'>*</span>
-                <div className=''>
-                    <input type='file' id='file-input' accept='.jpg, .png, .jpeg' className='form-control' onChange={handleFileUpload} />
-                </div>
+return (
+    <div>
+        <h1>Receipt Processor</h1>
+        <h2>Add Receipt</h2>
+        <div className="mb-1">
+            <span className='font-css top'>*</span>
+            <div>
+                <input 
+                    type='file' 
+                    id='file-input' 
+                    accept='.jpg, .png, .jpeg' 
+                    className='form-control' 
+                    onChange={handleFileUpload} 
+                />
             </div>
-            <div className="json-visualizer">
-                <h2>JSON Output</h2>
-                {isLoading ? (
-                    <div className='loader'></div>
+        </div>
+        <div className='receipts-section'>
+            <h2>Receipts</h2>
+            <div className="receipts-list">
+                {receipts.length === 0 ? (
+                    <p>No receipts found</p>
                 ) : (
-                    receipt_data && <pre>{receipt_data}</pre>
+                    <ul>
+                        {receipts.map((receipt, index) => (
+                            <li key={receipt.id} className="receipt-item">
+                                <span className="receipt-number">#{index + 1}</span>
+                                <span className="receipt-store">{receipt.store}</span>
+                                <span className="receipt-amount">${receipt.amount.toFixed(2)}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
             </div>
         </div>
-    );
+        {isLoading && <div className='loader'></div>}
+    </div>
+);
+
+
 }
 
 export default ReceiptProcessor;
